@@ -166,7 +166,7 @@ impl Tokenizer {
             },
             0 => Token::EOF,
             a => {
-                if a.is_ascii_alphabetic() {
+                if a.is_ascii_alphabetic() || a == b'_' {
                     skip_read = true;
                     let ident = self.read_identifier();
                     match lookup_ident(&ident) {
@@ -193,7 +193,7 @@ impl Tokenizer {
 
     fn read_identifier(&mut self) -> Token {
         let position = self.position;
-        while self.ch.is_ascii_alphabetic() {
+        while self.ch.is_ascii_alphanumeric() || self.ch == b'_' {
             self.read_char();
         }
         Token::Ident {
@@ -494,6 +494,35 @@ return false;
             Token::RightBrace { location: 50 },
         ];
 
+        let mut tokenizer = Tokenizer::new(input.to_string());
+
+        for (i, tt) in tests.iter().enumerate() {
+            let tok = tokenizer.next_token();
+            assert_eq!(&tok, tt, "test {} failed", i);
+        }
+    }
+
+    #[test]
+    fn test_identifiers() {
+        let input = "add10 apple_bottom jeans_3_boots _ignored";
+        let tests: Vec<Token> = vec![
+            Token::Ident {
+                location: 0,
+                raw: String::from("add10"),
+            },
+            Token::Ident {
+                location: 6,
+                raw: String::from("apple_bottom"),
+            },
+            Token::Ident {
+                location: 19,
+                raw: String::from("jeans_3_boots"),
+            },
+            Token::Ident {
+                location: 33,
+                raw: String::from("_ignored"),
+            },
+        ];
         let mut tokenizer = Tokenizer::new(input.to_string());
 
         for (i, tt) in tests.iter().enumerate() {
