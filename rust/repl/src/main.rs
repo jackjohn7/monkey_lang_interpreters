@@ -15,7 +15,6 @@ fn main() {
         if let Some('\r') = input.chars().next_back() {
             input.pop();
         }
-        println!("you entered: {}", input);
 
         let mut tok = Lexer::new(input);
         loop {
