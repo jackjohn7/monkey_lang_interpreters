@@ -16,7 +16,7 @@ fn main() {
             input.pop();
         }
 
-        let mut tok = Lexer::new(input);
+        let mut tok = Lexer::new(&input);
         loop {
             match tok.next_token() {
                 Token::EOF => {

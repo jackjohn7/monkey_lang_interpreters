@@ -1,16 +1,16 @@
 pub mod tokens;
-use tokens::{ Token, lookup_ident };
 use std::str;
+use tokens::{lookup_ident, Token};
 
-pub struct Lexer {
-    input: String,
+pub struct Lexer<'a> {
+    input: &'a str,
     position: usize,
     read_position: usize,
     ch: u8,
 }
 
-impl Lexer {
-    pub fn new(input: String) -> Self {
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a str) -> Self {
         let mut result = Self {
             input,
             position: 0,
@@ -25,7 +25,7 @@ impl Lexer {
         if self.read_position >= self.input.len() {
             self.ch = 0;
         } else {
-            self.ch = self.input.as_bytes()[self.read_position];
+            self.ch = self.input.as_bytes()[self.read_position]
         }
         self.position = self.read_position;
         self.read_position += 1;
@@ -34,6 +34,7 @@ impl Lexer {
         if self.read_position >= self.input.len() {
             0
         } else {
+            //self.input.chars().ve[self.read_position]
             self.input.as_bytes()[self.read_position]
         }
     }
@@ -138,9 +139,7 @@ impl Lexer {
         }
         Token::Ident {
             location: position,
-            raw: str::from_utf8(&self.input.as_bytes()[position..self.position])
-                .unwrap()
-                .to_owned(),
+            raw: self.input[position..self.position].to_owned(),
         }
     }
 
@@ -151,10 +150,7 @@ impl Lexer {
         }
         Token::Int {
             location: position,
-            value: str::from_utf8(&self.input.as_bytes()[position..self.position])
-                .unwrap()
-                .parse::<i64>()
-                .unwrap(),
+            value: self.input[position..self.position].parse::<i64>().unwrap(),
         }
     }
 
@@ -171,7 +167,7 @@ mod tests {
 
     #[test]
     fn test_basic_tokens() {
-        let input = String::from("=+(){},;");
+        let input = "=+(){},;";
         let tests: Vec<Token> = vec![
             Token::Assign { location: 0 },
             Token::Plus { location: 1 },
@@ -339,7 +335,7 @@ mod tests {
             Token::Semicolon { location: 186 },
             Token::EOF,
         ];
-        let mut tokenizer = Lexer::new(input.to_string());
+        let mut tokenizer = Lexer::new(input);
 
         for (i, tt) in tests.iter().enumerate() {
             let tok = tokenizer.next_token();
@@ -362,7 +358,7 @@ mod tests {
             Token::GreaterThan { location: 6 },
         ];
 
-        let mut tokenizer = Lexer::new(input.to_string());
+        let mut tokenizer = Lexer::new(input);
 
         for (i, tt) in tests.iter().enumerate() {
             let tok = tokenizer.next_token();
@@ -404,7 +400,7 @@ return false;
             Token::RightBrace { location: 50 },
         ];
 
-        let mut tokenizer = Lexer::new(input.to_string());
+        let mut tokenizer = Lexer::new(input);
 
         for (i, tt) in tests.iter().enumerate() {
             let tok = tokenizer.next_token();
@@ -433,7 +429,7 @@ return false;
                 raw: String::from("_ignored"),
             },
         ];
-        let mut tokenizer = Lexer::new(input.to_string());
+        let mut tokenizer = Lexer::new(input);
 
         for (i, tt) in tests.iter().enumerate() {
             let tok = tokenizer.next_token();
